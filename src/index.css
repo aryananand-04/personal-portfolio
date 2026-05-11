@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+@theme {
+  --color-accent:  #d4a843;
+  --color-surface: #0d1120;  /* navy surface */
+  --color-stroke:  #1e2340;  /* navy stroke */
+  --color-muted:   #8891b0;  /* navy-tinted muted */
+}
+
+/* ── Base ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* scroll-behavior handled by Lenis */
+
+html, body { cursor: none; }
+
+body {
+  background: #050816;  /* deep navy */
+  color: #f0f2ff;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Typography ───────────────────────────────── */
+.font-display {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+/* ── Chess board background pattern ──────────── */
+.chess-bg {
+  background-image: repeating-conic-gradient(
+    rgba(212, 168, 67, 0.04) 0% 25%,
+    transparent 0% 50%
+  );
+  background-size: 52px 52px;
+}
+
+/* ── Glassmorphism ────────────────────────────── */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* ── Noise texture overlay ────────────────────── */
+.bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
+/* ── Accent glow ──────────────────────────────── */
+.accent-glow {
+  box-shadow: 0 0 28px color-mix(in srgb, var(--color-accent) 45%, transparent);
+}
+
+/* ── Depth shadow ─────────────────────────────── */
+.depth-card { box-shadow: 0 4px 24px rgba(212,168,67,0.06); }
+.depth-card:hover { box-shadow: 0 8px 40px rgba(212,168,67,0.13); }
+
+/* ── Scrollbar ────────────────────────────────── */
+::-webkit-scrollbar       { width: 4px; }
+::-webkit-scrollbar-track { background: #050816; }
+::-webkit-scrollbar-thumb { background: var(--color-accent); border-radius: 2px; }
+
+/* ── Horizontal scroll ────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Animated gradient border ─────────────────── */
+@property --border-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes spin-border {
+  to { --border-angle: 360deg; }
+}
+.animated-gradient-border {
+  background: conic-gradient(
+    from var(--border-angle),
+    transparent 70%, #d4a843 80%, #f5d78a 85%, #d4a843 90%, transparent 100%
+  );
+  animation: spin-border 4s linear infinite;
+  padding: 1.5px;
+  border-radius: 1.5rem;
+}
+
+/* ── Seam-pulse border glow ───────────────────── */
+@keyframes seam-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(212,168,67,0.2), 0 0 40px rgba(212,168,67,0.08); }
+  50%       { box-shadow: 0 0 26px rgba(212,168,67,0.5), 0 0 80px rgba(212,168,67,0.2); }
+}
+.seam-pulse { animation: seam-pulse 3.5s ease-in-out infinite; }
+
+/* ── Keyframes ────────────────────────────────── */
+@keyframes scroll-down {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(250%); }
+}
+.animate-scroll-down {
+  animation: scroll-down 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* ── Skills marquee ───────────────────────────── */
+@keyframes marquee-left  { from { transform: translateX(0); }    to { transform: translateX(-50%); } }
+@keyframes marquee-right { from { transform: translateX(-50%); } to { transform: translateX(0); }    }
+.animate-marquee-left  { animation: marquee-left  185s linear infinite; }
+.animate-marquee-right { animation: marquee-right 200s linear infinite; }
+/* Idea #7 — depth-lane speed variants */
+.animate-marquee-slow { animation: marquee-left 270s linear infinite; }
+.animate-marquee-fast { animation: marquee-left  250s linear infinite; }
+.marquee-track:hover .animate-marquee-left,
+.marquee-track:hover .animate-marquee-right,
+.marquee-track:hover .animate-marquee-slow,
+.marquee-track:hover .animate-marquee-fast { animation-play-state: paused; }

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChatGPT Connectors — PM Teardown</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0ede8;
+    --muted: #888580;
+    --accent: #e8d5a3;
+    --accent2: #c4a96b;
+    --red: #e05c5c;
+    --green: #5cb88a;
+    --blue: #5b9bd5;
+    --orange: #e09a5c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; font-weight: 300; line-height: 1.6; min-height: 100vh; }
+  .page { max-width: 960px; margin: 0 auto; padding: 0 40px 80px; }
+  .cover { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 80px 0 60px; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+  .cover::before { content: ''; position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(232,213,163,0.04) 0%, transparent 70%); pointer-events: none; }
+  .cover-eyebrow { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: var(--accent2); text-transform: uppercase; margin-bottom: 32px; display: flex; align-items: center; gap: 12px; }
+  .cover-eyebrow::before { content: ''; display: block; width: 32px; height: 1px; background: var(--accent2); }
+  .cover-title { font-family: 'DM Serif Display', serif; font-size: clamp(48px, 7vw, 80px); line-height: 1.05; color: var(--text); margin-bottom: 12px; letter-spacing: -0.02em; }
+  .cover-title em { font-style: italic; color: var(--accent); }
+  .cover-sub { font-size: 18px; color: var(--muted); font-weight: 300; max-width: 520px; margin-bottom: 60px; line-height: 1.7; }
+  .cover-meta { display: flex; gap: 40px; flex-wrap: wrap; }
+  .meta-item { display: flex; flex-direction: column; gap: 4px; }
+  .meta-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
+  .meta-value { font-size: 14px; color: var(--text); font-weight: 400; }
+  .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 2px; margin: 60px 0; overflow: hidden; }
+  .stat { background: var(--surface); padding: 28px 24px; }
+  .stat-num { font-family: 'DM Serif Display', serif; font-size: 36px; color: var(--accent); line-height: 1; margin-bottom: 8px; }
+  .stat-label { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .stat-source { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(136,133,128,0.5); margin-top: 6px; letter-spacing: 0.05em; }
+  .section { padding: 70px 0; border-bottom: 1px solid var(--border); }
+  .section-num { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--accent2); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 10px; }
+  .section-title { font-family: 'DM Serif Display', serif; font-size: 36px; color: var(--text); margin-bottom: 8px; letter-spacing: -0.01em; line-height: 1.15; }
+  .section-subtitle { font-size: 15px; color: var(--muted); margin-bottom: 48px; max-width: 600px; }
+  .journey { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; position: relative; margin-bottom: 32px; }
+  .journey::before { content: ''; position: absolute; top: 28px; left: 10%; right: 10%; height: 1px; background: var(--border2); z-index: 0; }
+  .journey-step { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 8px; position: relative; z-index: 1; }
+  .journey-dot { width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--border2); background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 16px; position: relative; }
+  .journey-dot.pain { border-color: rgba(224,92,92,0.4); background: rgba(224,92,92,0.06); }
+  .journey-dot.ok { border-color: rgba(92,184,138,0.4); background: rgba(92,184,138,0.06); }
+  .journey-name { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .journey-desc { font-size: 12px; color: var(--text); line-height: 1.5; margin-bottom: 8px; }
+  .tag { display: inline-block; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 2px; text-transform: uppercase; }
+  .tag-pain { background: rgba(224,92,92,0.12); color: var(--red); }
+  .tag-ok { background: rgba(92,184,138,0.12); color: var(--green); }
+  .tag-warn { background: rgba(224,154,92,0.12); color: var(--orange); }
+  .gaps { display: flex; flex-direction: column; gap: 16px; }
+  .gap-card { border: 1px solid var(--border); border-radius: 2px; padding: 28px 32px; background: var(--surface); display: grid; grid-template-columns: 80px 1fr auto; gap: 24px; align-items: start; transition: border-color 0.2s; }
+  .gap-card:hover { border-color: var(--border2); }
+  .gap-card.critical { border-left: 3px solid var(--red); }
+  .gap-card.high { border-left: 3px solid var(--orange); }
+  .gap-card.medium { border-left: 3px solid var(--blue); }
+  .gap-num { font-family: 'DM Serif Display', serif; font-size: 48px; color: rgba(240,237,232,0.08); line-height: 1; }
+  .gap-sev { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+  .gap-sev.critical { color: var(--red); }
+  .gap-sev.high { color: var(--orange); }
+  .gap-sev.medium { color: var(--blue); }
+  .gap-title { font-size: 17px; font-weight: 500; color: var(--text); margin-bottom: 8px; line-height: 1.3; }
+  .gap-desc { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
+  .rice-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .rice-pill { font-family: 'DM Mono', monospace; font-size: 10px; padding: 4px 10px; border: 1px solid var(--border2); border-radius: 2px; color: var(--muted); }
+  .rice-pill span { color: var(--accent); }
+  .gap-score { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--accent); text-align: right; white-space: nowrap; }
+  .gap-score-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); text-align: right; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px; }
+  .mockup-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px; }
+  .mockup-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .mockup-label.bad { color: var(--red); }
+  .mockup-label.good { color: var(--green); }
+  .mockup-frame { background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 24px; }
+  .phone { background: #161616; border: 1px solid var(--border2); border-radius: 16px; overflow: hidden; max-width: 280px; margin: 0 auto; }
+  .phone-bar { background: #1d1d1d; padding: 12px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+  .phone-bar-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--surface2); }
+  .phone-bar-title { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); flex: 1; text-align: center; }
+  .phone-body { padding: 16px; }
+  .phone-section-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 12px; }
+  .connector-list { display: flex; flex-direction: column; gap: 10px; }
+  .connector-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); }
+  .connector-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; border: 1px solid var(--border2); }
+  .connector-info { flex: 1; min-width: 0; }
+  .connector-name { font-size: 12px; font-weight: 500; color: var(--text); }
+  .connector-desc { font-size: 10px; color: var(--muted); }
+  .connector-btn { font-family: 'DM Mono', monospace; font-size: 9px; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border2); color: var(--muted); background: transparent; letter-spacing: 0.05em; text-transform: uppercase; flex-shrink: 0; }
+  .connector-btn.connected { border-color: rgba(92,184,138,0.3); color: var(--green); background: rgba(92,184,138,0.06); }
+  .pain-note { font-size: 10px; color: var(--red); background: rgba(224,92,92,0.06); border: 1px solid rgba(224,92,92,0.15); border-radius: 6px; padding: 8px 10px; margin-top: 10px; line-height: 1.5; }
+  .good-note { font-size: 10px; color: var(--green); background: rgba(92,184,138,0.06); border: 1px solid rgba(92,184,138,0.15); border-radius: 6px; padding: 8px 10px; margin-top: 10px; line-height: 1.5; }
+  .search-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; margin-bottom: 12px; }
+  .search-bar span { font-size: 11px; color: var(--muted); flex: 1; }
+  .category-row { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .cat-pill { font-family: 'DM Mono', monospace; font-size: 9px; padding: 3px 8px; border-radius: 20px; border: 1px solid var(--border2); color: var(--muted); letter-spacing: 0.05em; }
+  .cat-pill.active { background: rgba(232,213,163,0.1); border-color: rgba(232,213,163,0.3); color: var(--accent); }
+  .usage-bar-wrap { margin-top: 10px; }
+  .usage-bar-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+  .usage-bar-track { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+  .usage-bar-fill { height: 100%; border-radius: 2px; background: var(--accent2); }
+  .reco-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .reco-card { border: 1px solid var(--border); border-radius: 2px; padding: 28px 24px; background: var(--surface); display: flex; flex-direction: column; gap: 16px; }
+  .reco-timeline { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent2); }
+  .reco-title { font-size: 16px; font-weight: 500; color: var(--text); line-height: 1.35; }
+  .reco-desc { font-size: 12px; color: var(--muted); line-height: 1.7; flex: 1; }
+  .reco-krs { display: flex; flex-direction: column; gap: 8px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .reco-kr { font-size: 11px; color: var(--muted); padding-left: 12px; border-left: 2px solid var(--border2); line-height: 1.5; }
+  .reco-kr strong { color: var(--accent); font-weight: 500; }
+  .nsm-box { border: 1px solid rgba(232,213,163,0.2); border-radius: 2px; padding: 36px 40px; background: rgba(232,213,163,0.03); margin-bottom: 48px; position: relative; overflow: hidden; }
+  .nsm-box::before { content: 'NSM'; position: absolute; right: 40px; top: 50%; transform: translateY(-50%); font-family: 'DM Serif Display', serif; font-size: 120px; color: rgba(232,213,163,0.04); line-height: 1; pointer-events: none; }
+  .nsm-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--accent2); text-transform: uppercase; margin-bottom: 12px; }
+  .nsm-value { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--accent); margin-bottom: 12px; line-height: 1.2; max-width: 500px; }
+  .nsm-desc { font-size: 14px; color: var(--muted); line-height: 1.7; max-width: 560px; }
+  .closing { padding: 70px 0 0; }
+  .pm-view { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text); line-height: 1.5; max-width: 640px; margin-bottom: 48px; font-style: italic; }
+  .bullets { display: flex; flex-direction: column; gap: 16px; max-width: 680px; }
+  .bullet { display: flex; gap: 16px; align-items: flex-start; font-size: 14px; color: var(--muted); line-height: 1.7; }
+  .bullet-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); margin-top: 9px; flex-shrink: 0; }
+  .footer { margin-top: 80px; padding-top: 32px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  .swot { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .swot-cell { padding: 24px; border: 1px solid var(--border); background: var(--surface); border-radius: 2px; }
+  .swot-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px; }
+  .swot-cell.s .swot-label { color: var(--green); }
+  .swot-cell.w .swot-label { color: var(--red); }
+  .swot-cell.o .swot-label { color: var(--blue); }
+  .swot-cell.t .swot-label { color: var(--orange); }
+  .swot-points { display: flex; flex-direction: column; gap: 8px; }
+  .swot-point { font-size: 12px; color: var(--muted); padding-left: 12px; border-left: 1px solid var(--border2); line-height: 1.5; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 0; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="cover">
+    <div class="cover-eyebrow">PM Product Teardown · AI Connector Layer</div>
+    <h1 class="cover-title">ChatGPT <em>Connectors</em><br>— The Integration Gap</h1>
+    <p class="cover-sub">900 million weekly users. 60+ apps. Write-capable connectors locked to Enterprise only. Why OpenAI's integration layer is still the biggest unresolved PM problem in AI.</p>
+    <div class="cover-meta">
+      <div class="meta-item"><span class="meta-label">Analyst</span><span class="meta-value">Aryan</span></div>
+      <div class="meta-item"><span class="meta-label">Date</span><span class="meta-value">May 2026</span></div>
+      <div class="meta-item"><span class="meta-label">Framework</span><span class="meta-value">RICE · JTBD · OKR</span></div>
+      <div class="meta-item"><span class="meta-label">Teardown target</span><span class="meta-value">ChatGPT Connectors / GPT Actions</span></div>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">900M</div><div class="stat-label">Weekly active users as of Feb 2026</div><div class="stat-source">OpenAI · Feb 2026</div></div>
+    <div class="stat"><div class="stat-num">$25B+</div><div class="stat-label">Annualised revenue as of Feb 2026</div><div class="stat-source">Reuters · Feb 2026</div></div>
+    <div class="stat"><div class="stat-num">60+</div><div class="stat-label">App connectors available — renamed from "connectors" Dec 2025</div><div class="stat-source">OpenAI · 2026</div></div>
+    <div class="stat"><div class="stat-num">20%</div><div class="stat-label">Enterprise messages via Custom GPT or Projects</div><div class="stat-source">OpenAI · 2026</div></div>
+  </div>
+  <div class="section">
+    <div class="section-num">01 — Company Context</div>
+    <h2 class="section-title">Scale without<br>connector depth</h2>
+    <p class="section-subtitle">ChatGPT is the dominant AI platform. Its connector ecosystem is not.</p>
+    <div class="swot">
+      <div class="swot-cell s"><div class="swot-label">Strengths</div><div class="swot-points"><div class="swot-point">900M WAU — unmatched distribution moat</div><div class="swot-point">50M paying subscribers across all tiers</div><div class="swot-point">92% of Fortune 500 companies as customers</div><div class="swot-point">2M developers on OpenAI API</div></div></div>
+      <div class="swot-cell w"><div class="swot-label">Weaknesses</div><div class="swot-points"><div class="swot-point">Apps (connectors) locked to paid plans — free users completely excluded</div><div class="swot-point">Not available in EEA, Switzerland, or UK — major market gap</div><div class="swot-point">Apps disabled by default on Enterprise/Edu — admin must manually enable</div><div class="swot-point">Plugins deprecated in 2024 — ecosystem reset, trust damaged with developers</div></div></div>
+      <div class="swot-cell o"><div class="swot-label">Opportunities</div><div class="swot-points"><div class="swot-point">MCP support launched — developers can now build custom connectors via Apps SDK</div><div class="swot-point">7M+ enterprise seats = massive workflow integration upside</div><div class="swot-point">2.5B daily prompts — app connector data could power personalisation at scale</div></div></div>
+      <div class="swot-cell t"><div class="swot-label">Threats</div><div class="swot-points"><div class="swot-point">Claude MCP is open protocol — any dev can build connectors</div><div class="swot-point">Zapier AI, Make.com moving fast on AI-native workflows</div><div class="swot-point">Enterprise users increasingly evaluating Claude for workflow depth</div></div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-num">02 — North Star Metric</div>
+    <h2 class="section-title">The metric that<br>actually matters</h2>
+    <p class="section-subtitle">Not session length. Not prompt count. The real value is task completion through connected tools.</p>
+    <div class="nsm-box">
+      <div class="nsm-label">North Star Metric</div>
+      <div class="nsm-value">Weekly tasks completed via connected tools per active user</div>
+      <div class="nsm-desc">ChatGPT optimises for engagement — prompts sent, sessions opened. But connector success is measured by tasks that couldn't be done without the integration. A user who connects Gmail and completes 3 real workflows per week is worth 10x a user who opens the connector screen and never returns. Every product decision on connectors should move this number.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-num">03 — User Journey</div>
+    <h2 class="section-title">Where the experience<br>breaks down</h2>
+    <p class="section-subtitle">Five stages. Three critical failure points before a user completes a single connected task.</p>
+    <div class="journey">
+      <div class="journey-step"><div class="journey-dot pain">🔍</div><div class="journey-name">Discover</div><div class="journey-desc">Connector store buried 3 taps into settings</div><span class="tag tag-pain">Critical drop</span></div>
+      <div class="journey-step"><div class="journey-dot pain">🔌</div><div class="journey-name">Connect</div><div class="journey-desc">Manual OAuth flow per tool. No guided setup</div><span class="tag tag-pain">High friction</span></div>
+      <div class="journey-step"><div class="journey-dot pain">⚡</div><div class="journey-name">Invoke</div><div class="journey-desc">User must manually trigger. No context-aware routing</div><span class="tag tag-warn">Missed moment</span></div>
+      <div class="journey-step"><div class="journey-dot ok">✅</div><div class="journey-name">Execute</div><div class="journey-desc">Works reliably once invoked. Low latency</div><span class="tag tag-ok">Works well</span></div>
+      <div class="journey-step"><div class="journey-dot pain">🔄</div><div class="journey-name">Return</div><div class="journey-desc">No session memory. Context resets every conversation</div><span class="tag tag-pain">Retention gap</span></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-num">04 — UI Analysis</div>
+    <h2 class="section-title">Current state vs<br>proposed redesign</h2>
+    <p class="section-subtitle">The connector discovery problem is a UI problem first. Here's what it looks like today, and what it should look like.</p>
+    <div class="mockup-wrap">
+      <div class="mockup-frame">
+        <div class="mockup-label bad">⚠ Current — broken discovery</div>
+        <div class="phone">
+          <div class="phone-bar"><div class="phone-bar-dot"></div><div class="phone-bar-title">Settings → Connectors</div><div class="phone-bar-dot"></div></div>
+          <div class="phone-body">
+            <div class="phone-section-title">Connected apps</div>
+            <div class="connector-list">
+              <div class="connector-item"><div class="connector-icon">📬</div><div class="connector-info"><div class="connector-name">Gmail</div><div class="connector-desc">Read & compose emails</div></div><button class="connector-btn connected">On</button></div>
+              <div class="connector-item"><div class="connector-icon">📁</div><div class="connector-info"><div class="connector-name">Google Drive</div><div class="connector-desc">Access your files</div></div><button class="connector-btn">Connect</button></div>
+              <div class="connector-item"><div class="connector-icon">💬</div><div class="connector-info"><div class="connector-name">Slack</div><div class="connector-desc">Messages & channels</div></div><button class="connector-btn">Connect</button></div>
+            </div>
+            <div class="pain-note">✗ No usage data shown — user can't tell if connector is working<br>✗ Buried in Settings — most users never find this screen<br>✗ 15 total connectors vs Claude MCP's open ecosystem</div>
+          </div>
+        </div>
+      </div>
+      <div class="mockup-frame">
+        <div class="mockup-label good">✓ Proposed — contextual & discoverable</div>
+        <div class="phone">
+          <div class="phone-bar"><div class="phone-bar-dot"></div><div class="phone-bar-title">Smart Connectors — Home</div><div class="phone-bar-dot"></div></div>
+          <div class="phone-body">
+            <div class="search-bar"><span>Search tools or workflows...</span><span style="color: var(--accent2); font-size:12px;">⌘K</span></div>
+            <div class="category-row"><div class="cat-pill active">All</div><div class="cat-pill">Work</div><div class="cat-pill">Files</div><div class="cat-pill">Comms</div></div>
+            <div class="connector-list">
+              <div class="connector-item"><div class="connector-icon">📬</div><div class="connector-info"><div class="connector-name">Gmail</div><div class="connector-desc">12 tasks this week</div></div><button class="connector-btn connected">Active</button></div>
+              <div class="connector-item"><div class="connector-icon">📅</div><div class="connector-info"><div class="connector-name">Google Calendar</div><div class="connector-desc">Suggested based on usage</div></div><button class="connector-btn">1-tap add</button></div>
+              <div class="connector-item"><div class="connector-icon">🔔</div><div class="connector-info"><div class="connector-name">Notion</div><div class="connector-desc">Suggested · your team uses it</div></div><button class="connector-btn">1-tap add</button></div>
+            </div>
+            <div class="usage-bar-wrap">
+              <div class="usage-bar-label"><span>Connector activity this week</span><span style="color: var(--accent);">12 tasks</span></div>
+              <div class="usage-bar-track"><div class="usage-bar-fill" style="width: 65%"></div></div>
+            </div>
+            <div class="good-note">✓ Usage metrics visible — shows value immediately<br>✓ AI-suggested connectors based on conversation context<br>✓ Surface on home screen, not buried in settings</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-num">05 — Gap Analysis</div>
+    <h2 class="section-title">Product gaps<br>RICE scored</h2>
+    <p class="section-subtitle">Three critical gaps ranked by business impact. Each scored by Reach × Impact × Confidence ÷ Effort.</p>
+    <div class="gaps">
+      <div class="gap-card critical"><div class="gap-num">01</div><div class="gap-content"><div class="gap-sev critical">Critical</div><div class="gap-title">Apps are paywalled and invisible — zero access for 850M+ free users</div><div class="gap-desc">ChatGPT has 900M weekly active users. App connectors require a paid plan — Plus, Team, Enterprise, or Edu. Free users have no access whatsoever. That means the connector ecosystem is structurally unavailable to the majority of ChatGPT's user base. On top of this, the app directory sits inside Settings, with no in-conversation discovery moment. Even paid users who have access rarely find it. The feature is simultaneously paywalled and buried — a double friction that keeps connector adoption low despite 60+ apps being available.</div><div class="rice-row"><div class="rice-pill">Reach <span>850M free users</span></div><div class="rice-pill">Impact <span>5/5</span></div><div class="rice-pill">Confidence <span>90%</span></div><div class="rice-pill">Effort <span>3 mo</span></div></div></div><div><div class="gap-score">127M</div><div class="gap-score-label">RICE Score</div></div></div>
+      <div class="gap-card high"><div class="gap-num">02</div><div class="gap-content"><div class="gap-sev high">High</div><div class="gap-title">MCP launched but write access is gated to Business/Enterprise only</div><div class="gap-desc">OpenAI launched MCP connector support and an Apps SDK — a real step toward an open ecosystem. But the implementation is half-open: full write-capable MCP connectors are restricted to Business, Enterprise, and Edu workspaces. Plus and Pro individual users are limited to read/fetch-only. This means 50M paying subscribers on Plus and Pro cannot build or use write-capable custom connectors. Claude's MCP is fully open — any user on any plan can connect. The asymmetry compounds every month as Claude's developer community grows and OpenAI's remains gated.</div><div class="rice-row"><div class="rice-pill">Reach <span>50M paid users</span></div><div class="rice-pill">Impact <span>5/5</span></div><div class="rice-pill">Confidence <span>85%</span></div><div class="rice-pill">Effort <span>4 mo</span></div></div></div><div><div class="gap-score">53M</div><div class="gap-score-label">RICE Score</div></div></div>
+      <div class="gap-card medium"><div class="gap-num">03</div><div class="gap-content"><div class="gap-sev medium">Medium</div><div class="gap-title">No session memory across connector-powered workflows</div><div class="gap-desc">Every ChatGPT conversation starts fresh. For connector use cases — "check my calendar, draft an email, save to Drive" — this is a critical failure. Users must re-explain context every session. Enterprise users report rebuilding the same multi-tool workflows repeatedly. Memory 2.0 launched with GPT-5 helps with general context but doesn't persist connector state or workflow history. This keeps connector usage episodic rather than habitual — exactly the opposite of what drives weekly active connector sessions.</div><div class="rice-row"><div class="rice-pill">Reach <span>9M biz users</span></div><div class="rice-pill">Impact <span>4/5</span></div><div class="rice-pill">Confidence <span>80%</span></div><div class="rice-pill">Effort <span>5 mo</span></div></div></div><div><div class="gap-score">57.6M</div><div class="gap-score-label">RICE Score</div></div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-num">06 — Recommendations</div>
+    <h2 class="section-title">Now / Next / Later<br>roadmap</h2>
+    <p class="section-subtitle">Three initiatives, sequenced by impact and build complexity. Each with OKR-framed success metrics.</p>
+    <div class="reco-grid">
+      <div class="reco-card"><div class="reco-timeline">Now · 0–3 months</div><div class="reco-title">Surface connectors in the conversation flow</div><div class="reco-desc">When a user's prompt implies a tool — "check my emails", "add to my calendar", "save this to Drive" — ChatGPT proactively suggests the relevant connector inline. One-tap connect. No settings navigation. The discovery moment happens at the point of intent, not inside a menu.</div><div class="reco-krs"><div class="reco-kr">KR1 — Connector discovery rate: <strong>3% → 25%</strong> of active users within 90 days</div><div class="reco-kr">KR2 — 1-tap connect conversion: <strong>40%</strong> of users who see the prompt complete setup</div><div class="reco-kr">KR3 — Weekly connected task sessions: <strong>+3x</strong> in 60 days</div></div></div>
+      <div class="reco-card"><div class="reco-timeline">Next · 3–9 months</div><div class="reco-title">Open the connector SDK — match Claude MCP</div><div class="reco-desc">Release a public connector SDK for the 2 million OpenAI API developers. Let any developer build and publish a connector. Create a Connector Store inside ChatGPT with ratings, usage stats, and verification badges. This turns a closed 15-connector ecosystem into an open marketplace within 6 months.</div><div class="reco-krs"><div class="reco-kr">KR1 — Third-party connectors published: <strong>500+</strong> in 6 months</div><div class="reco-kr">KR2 — Enterprise connectors per account: <strong>avg 4 → 12</strong></div><div class="reco-kr">KR3 — Developer NPS on connector SDK: <strong>&gt;45</strong></div></div></div>
+      <div class="reco-card"><div class="reco-timeline">Later · 9–18 months</div><div class="reco-title">Persistent workflow memory across sessions</div><div class="reco-desc">Build connector workflow memory — ChatGPT remembers that every Monday you want a calendar summary, or that your Notion workspace is your primary notes destination. Workflows become persistent automations, not one-off requests. This shifts connector usage from episodic to habitual — the only metric that matters long term.</div><div class="reco-krs"><div class="reco-kr">KR1 — Habitual connector users (weekly): <strong>5% → 30%</strong> of enterprise seats</div><div class="reco-kr">KR2 — Saved workflow templates created: <strong>10M</strong> in 12 months</div><div class="reco-kr">KR3 — Enterprise 12-month retention: <strong>88% → 93%</strong></div></div></div>
+    </div>
+  </div>
+  <div class="closing section">
+    <div class="section-num">07 — PM View</div>
+    <h2 class="section-title">The bottom line</h2>
+    <p class="pm-view">"ChatGPT has the users. Claude has the open ecosystem. OpenAI launched MCP — but gating write access to Enterprise only is the exact half-measure that loses the developer community."</p>
+    <div class="bullets">
+      <div class="bullet"><div class="bullet-dot"></div><span>900M weekly users is the most powerful distribution in AI — but connectors (now called apps) are paywalled for all free users. That's the majority of ChatGPT's user base locked out of the integration layer entirely.</span></div>
+      <div class="bullet"><div class="bullet-dot"></div><span>OpenAI launched MCP support and an Apps SDK — the right move. But restricting write-capable connectors to Business/Enterprise while Claude offers full MCP access on all plans is a platform strategy error. Developers choose ecosystems, not individual features.</span></div>
+      <div class="bullet"><div class="bullet-dot"></div><span>Apps are also disabled by default on Enterprise/Edu workspaces — admins must manually enable them. A feature that requires admin action to turn on will never reach its adoption potential. Default-on with opt-out is the only path to meaningful enterprise connector usage.</span></div>
+    </div>
+  </div>
+  <div class="footer"><span>ChatGPT Connectors · PM Teardown · May 2026</span><span>Aryan · AI PM Portfolio</span></div>
+</div>
+</body>
+</html>
