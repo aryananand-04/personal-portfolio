@@ -7,4 +7,16 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor':  ['react', 'react-dom'],
+          'motion':        ['framer-motion', 'gsap'],
+          'chess':         ['chess.js', 'react-chessboard'],
+        },
+      },
+    },
+  },
 })
