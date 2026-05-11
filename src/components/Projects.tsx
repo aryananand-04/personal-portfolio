@@ -251,24 +251,6 @@ function MatrixCanvas() {
   return <canvas ref={ref} className="absolute inset-0 w-full h-full block" />
 }
 
-/* ── Sub-section label (reuses "Product Teardowns" style) ───────────────── */
-function SubLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="overflow-hidden mt-14 mb-7">
-      <motion.div
-        initial={{ clipPath: 'inset(100% 0 0 0)' }}
-        whileInView={{ clipPath: 'inset(0% 0 0 0)' }}
-        viewport={{ once: true, amount: 0.1 }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="flex items-center gap-4"
-      >
-        <span className="text-accent font-mono text-xs">↳</span>
-        <div className="w-6 h-px bg-stroke" />
-        <p className="text-sm text-[#f0f2ff] uppercase tracking-[0.25em] font-bold">{children}</p>
-      </motion.div>
-    </div>
-  )
-}
 
 /* ══════════════════════════════════════════════════════════════════════════
    PROJECT CARD CANVASES
@@ -664,74 +646,6 @@ function getProjectCanvas(title: string): React.ComponentType | null {
   return StreamCanvas
 }
 
-/* ── Idea #9: Clip-path wipe reveal for project cards ───────────────────── */
-function ProjectCard({ project, index }: { project: Project; index: number }) {
-  const { ref, boxShadow } = useProximityGlow(220)
-  const inView = useInView(ref, { once: true, amount: 0 })
-  const Canvas = getProjectCanvas(project.title)
-
-  return (
-    <motion.div
-      ref={ref}
-      style={{ boxShadow, minHeight: '260px' }}
-      initial={false}
-      animate={{
-        clipPath: inView
-          ? 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)'
-          : 'polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)',
-        opacity: inView ? 1 : 0,
-      }}
-      transition={{ duration: 0.65, delay: inView ? index * 0.07 : 0, ease: [0.76, 0, 0.24, 1] }}
-    >
-      <TiltCard
-        className="relative rounded-2xl overflow-hidden group cursor-default depth-card w-full h-full flex flex-col"
-        style={{ minHeight: '260px' }}
-      >
-        {/* Canvas animation — base layer */}
-        {Canvas && <Canvas />}
-        {/* Scrim for text readability */}
-        <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-[#060919]/98 via-[#060919]/70 to-transparent" />
-        <div className="absolute inset-0 bg-[#060919]/20" />
-
-        {/* Links — top right */}
-        <div className="absolute top-4 right-4 z-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          {project.repo && (
-            <a href={project.repo} target="_blank" rel="noreferrer"
-              className="liquid-glass rounded-full p-1.5 text-[#f0f2ff] hover:bg-white hover:text-black transition-all"
-              data-cursor="pointer">
-              <Github size={13} />
-            </a>
-          )}
-          {project.link && (
-            <a href={project.link} target="_blank" rel="noreferrer"
-              className="liquid-glass rounded-full p-1.5 text-[#f0f2ff] hover:bg-white hover:text-black transition-all"
-              data-cursor="pointer">
-              <ExternalLink size={13} />
-            </a>
-          )}
-        </div>
-
-        {/* Content */}
-        <div className="relative z-10 mt-auto p-5 flex flex-col gap-3">
-          <h3 className="font-display italic font-black text-lg text-[#f0f2ff] group-hover:text-accent transition-colors duration-300 leading-tight">
-            {project.title}
-          </h3>
-          <p className="text-muted text-xs leading-relaxed line-clamp-2">{project.description}</p>
-          <div className="flex flex-wrap gap-1.5">
-            {project.tags.slice(0, 5).map((t, j) => (
-              <span key={j} className="liquid-glass text-accent/70 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md border border-accent/15">
-                {t}
-              </span>
-            ))}
-            {project.tags.length > 5 && (
-              <span className="text-muted text-[9px] font-mono self-center">+{project.tags.length - 5}</span>
-            )}
-          </div>
-        </div>
-      </TiltCard>
-    </motion.div>
-  )
-}
 
 /* ══════════════════════════════════════════════════════════════════════════
    EXPANDED PROJECT SPOTLIGHT MODAL
