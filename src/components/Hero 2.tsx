@@ -119,8 +119,8 @@ function PortraitMask() {
     <>
       <motion.div
         ref={containerRef}
-        style={{ rotateX: srx, rotateY: sry, transformStyle: 'preserve-3d', transformPerspective: 900 }}
-        className="relative w-full max-w-sm lg:max-w-none h-96 sm:h-[50vh] lg:h-[78vh] rounded-2xl overflow-hidden cursor-pointer"
+        style={{ rotateX: srx, rotateY: sry, transformStyle: 'preserve-3d', transformPerspective: 900, height: '78vh' }}
+        className="relative w-full max-w-[360px] xl:max-w-[400px] rounded-2xl overflow-hidden cursor-pointer"
         animate={{
           boxShadow: revealed
             ? '0 0 0 2px rgba(212,168,67,0.9), 0 0 18px rgba(212,168,67,1), 0 0 35px rgba(212,168,67,0.6)'
@@ -243,18 +243,18 @@ export default function Hero() {
         </motion.div>
       ))}
 
-      <div className="relative z-10 w-full grid grid-cols-1 lg:grid-cols-[1fr_minmax(340px,400px)] xl:grid-cols-[1fr_minmax(380px,460px)] gap-12 lg:gap-16 items-center">
+      <div className="relative z-10 max-w-7xl w-full grid grid-cols-1 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_420px] gap-12 lg:gap-16 items-center">
 
         {/* Left — text */}
-        <div className="max-w-3xl">
+        <div>
           <p className="blur-in text-xs text-muted uppercase tracking-[0.4em] mb-6 flex items-center gap-3" style={{ opacity: 0 }}>
             <span className="inline-block w-8 h-px bg-stroke" />
             Based in Bengaluru
           </p>
 
           <h1
-            className="font-display italic font-bold leading-[0.85] tracking-[-0.04em] text-[#f0f2ff] mb-8 whitespace-nowrap"
-            style={{ fontSize: 'clamp(3.5rem, 8vw, 10rem)', textShadow: '0 4px 24px rgba(0,0,0,0.6)', perspective: '800px' }}
+            className="font-display italic font-bold leading-[0.85] tracking-[-0.04em] text-[#f0f2ff] mb-8"
+            style={{ fontSize: 'clamp(3.5rem, 12vw, 15rem)', textShadow: '0 4px 24px rgba(0,0,0,0.6)', perspective: '800px' }}
           >
             {nameLetters}
             <sup className="hero-letter inline-block text-[0.35em] ml-2 font-normal not-italic text-muted align-top mt-4" style={{ opacity: 0 }}>*</sup>
@@ -305,7 +305,7 @@ export default function Hero() {
           initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 1.2, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          className="flex items-center justify-center lg:justify-end"
+          className="hidden lg:flex justify-center items-center"
         >
           <PortraitMask />
         </motion.div>
